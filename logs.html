@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warehouse Management | Audit Logs</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --wm-teal: #14A2B8;
+            --wm-teal-dark: #0F8496;
+            --wm-amber: #F5A623;
+            --wm-amber-dark: #D98E14;
+            --wm-navy: #2B4C7E;
+            --wm-bg: #EEF1F8;
+            --wm-muted: #6C7A89;
+        }
+
+        body {
+            background-color: var(--wm-bg);
+            color: #2c3e50;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        .navbar-wm {
+            background: linear-gradient(90deg, var(--wm-navy) 0%, var(--wm-teal) 100%);
+        }
+
+        .kpi-card {
+            border: none;
+            border-radius: 12px;
+            border-left: 5px solid transparent;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0.5rem 1rem rgba(43, 76, 126, 0.1) !important;
+        }
+        .kpi-teal { border-left-color: var(--wm-teal); }
+        .kpi-navy { border-left-color: var(--wm-navy); }
+        .kpi-amber { border-left-color: var(--wm-amber); }
+
+        .icon-box-teal {
+            background-color: rgba(20, 162, 184, 0.12);
+            color: var(--wm-teal);
+        }
+        .icon-box-navy {
+            background-color: rgba(43, 76, 126, 0.12);
+            color: var(--wm-navy);
+        }
+        .icon-box-amber {
+            background-color: rgba(245, 166, 35, 0.15);
+            color: var(--wm-amber-dark);
+        }
+
+        .btn-wm-teal {
+            background-color: var(--wm-teal);
+            border-color: var(--wm-teal);
+            color: #fff;
+            font-weight: 600;
+        }
+        .btn-wm-teal:hover {
+            background-color: var(--wm-teal-dark);
+            border-color: var(--wm-teal-dark);
+            color: #fff;
+        }
+
+        .btn-wm-amber {
+            background-color: var(--wm-amber);
+            border-color: var(--wm-amber);
+            color: #fff;
+            font-weight: 600;
+        }
+        .btn-wm-amber:hover {
+            background-color: var(--wm-amber-dark);
+            border-color: var(--wm-amber-dark);
+            color: #fff;
+        }
+
+        .section-heading, .form-label {
+            color: var(--wm-navy);
+            font-weight: 600;
+        }
+        .table-wm thead th {
+            background-color: #F6F8FC;
+            color: var(--wm-navy);
+            font-weight: 600;
+            border-bottom: 2px solid #DCE3F0;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--wm-teal);
+            box-shadow: 0 0 0 0.2rem rgba(20, 162, 184, 0.2);
+        }
+    </style>
+</head>
+<body>
+
+<!-- Top Navigation Bar -->
+<nav class="navbar navbar-expand-lg navbar-dark navbar-wm shadow-sm">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand fw-bold d-flex align-items-center" href="dashboard.html">
+            <i class="bi bi-box-seam-fill me-2 fs-4" style="color: var(--wm-amber);"></i>
+            <span>WAREHOUSE MANAGEMENT</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="mainNav">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3">
+                <li class="nav-item">
+                    <a class="nav-link" href="dashboard.html"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#"><i class="bi bi-tags me-1"></i>Categories</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active fw-semibold" href="logs.html"><i class="bi bi-clock-history me-1"></i>Audit Logs</a>
+                </li>
+            </ul>
+            <div class="d-flex align-items-center text-white gap-3">
+                <span class="small">
+                    <i class="bi bi-person-circle me-1"></i>
+                    <span id="navUsername">Admin</span>
+                    <span class="badge ms-1" id="navUserRole" style="background-color: var(--wm-amber); color: #fff;">ADMIN</span>
+                </span>
+                <a href="php/ac/logout.php" class="btn btn-light btn-sm fw-semibold" style="color: var(--wm-navy);">
+                    <i class="bi bi-box-arrow-right me-1"></i>Logout
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid px-4 py-4">
+
+    <!-- KPI Summary Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm kpi-card kpi-navy h-100">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted small text-uppercase fw-semibold">Total Events Logged</div>
+                        <div class="fs-2 fw-bold" id="kpiTotalLogs" style="color: var(--wm-navy);">148</div>
+                    </div>
+                    <div class="icon-box-navy p-3 rounded-circle">
+                        <i class="bi bi-journal-text fs-3"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm kpi-card kpi-teal h-100">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted small text-uppercase fw-semibold">Stock Adjustments Today</div>
+                        <div class="fs-2 fw-bold" id="kpiStockChanges" style="color: var(--wm-teal-dark);">19</div>
+                    </div>
+                    <div class="icon-box-teal p-3 rounded-circle">
+                        <i class="bi bi-arrow-left-right fs-3"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm kpi-card kpi-amber h-100">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted small text-uppercase fw-semibold">User Sign-Ins Today</div>
+                        <div class="fs-2 fw-bold" id="kpiAuthEvents" style="color: var(--wm-amber-dark);">6</div>
+                    </div>
+                    <div class="icon-box-amber p-3 rounded-circle">
+                        <i class="bi bi-shield-check fs-3"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter & Export Toolbar -->
+    <div class="card border-0 shadow-sm mb-4" style="border-radius: 12px;">
+        <div class="card-body">
+            <div class="row g-2 align-items-center">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0" style="color: var(--wm-teal);">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" id="logSearchInput" class="form-control border-start-0" placeholder="Search by user, SKU, or activity details...">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select id="actionTypeFilter" class="form-select">
+                        <option value="">All Activity Types</option>
+                        <option value="AUTH">Authentication (Login / Logout)</option>
+                        <option value="CREATE">Product Created</option>
+                        <option value="UPDATE">Stock / Price Updated</option>
+                        <option value="DELETE">Product Removed</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <input type="date" id="logDateFilter" class="form-control">
+                </div>
+                <div class="col-md-3 d-flex flex-wrap justify-content-md-end gap-2">
+                    <button type="button" class="btn btn-outline-secondary fw-semibold" id="resetFiltersBtn">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>Reset
+                    </button>
+                    <button type="button" class="btn btn-wm-amber" id="exportLogsCsvBtn">
+                        <i class="bi bi-download me-1"></i>Export CSV
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audit Logs Table -->
+    <div class="card border-0 shadow-sm" style="border-radius: 12px; overflow: hidden;">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom">
+            <h5 class="mb-0 section-heading">
+                <i class="bi bi-clock-history me-2" style="color: var(--wm-teal);"></i>System Activity &amp; Audit Trail
+            </h5>
+            <span class="badge rounded-pill" style="background-color: var(--wm-bg); color: var(--wm-navy);" id="visibleLogsCount">
+                6 entries shown
+            </span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover table-wm align-middle mb-0" id="logsTable">
+                <thead>
+                    <tr>
+                        <th>Log ID</th>
+                        <th>Timestamp</th>
+                        <th>User</th>
+                        <th>Action</th>
+                        <th>Target / SKU</th>
+                        <th>Details</th>
+                        <th class="text-end">IP Address</th>
+                    </tr>
+                </thead>
+                <tbody id="logsTableBody">
+                    <!-- Sample Log 1: Login -->
+                    <tr>
+                        <td class="font-monospace text-muted small">#LOG-1048</td>
+                        <td class="small">2026-11-24 14:18:05</td>
+                        <td>
+                            <div class="fw-semibold" style="color: var(--wm-navy);">Admin</div>
+                            <div class="text-muted" style="font-size: 0.75rem;">ADMIN</div>
+                        </td>
+                        <td>
+                            <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle">
+                                <i class="bi bi-box-arrow-in-right me-1"></i>Login
+                            </span>
+                        </td>
+                        <td class="font-monospace fw-semibold" style="color: var(--wm-navy);">SESSION</td>
+                        <td class="small">User signed in successfully via web portal</td>
+                        <td class="text-end font-monospace text-muted small">192.168.1.14</td>
+                    </tr>
+
+                    <!-- Sample Log 2: Stock Update -->
+                    <tr>
+                        <td class="font-monospace text-muted small">#LOG-1047</td>
+                        <td class="small">2026-11-24 13:52:41</td>
+                        <td>
+                            <div class="fw-semibold" style="color: var(--wm-navy);">Admin</div>
+                            <div class="text-muted" style="font-size: 0.75rem;">ADMIN</div>
+                        </td>
+                        <td>
+                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+                                <i class="bi bi-pencil-square me-1"></i>Stock Update
+                            </span>
+                        </td>
+                        <td class="font-monospace fw-semibold" style="color: var(--wm-navy);">ELEC-101</td>
+                        <td class="small">Adjusted stock quantity from <strong>8</strong> to <strong>3</strong> (Dispatched order #SO-884)</td>
+                        <td class="text-end font-monospace text-muted small">192.168.1.14</td>
+                    </tr>
+
+                    <!-- Sample Log 3: Product Added -->
+                    <tr>
+                        <td class="font-monospace text-muted small">#LOG-1046</td>
+                        <td class="small">2026-11-24 11:30:19</td>
+                        <td>
+                            <div class="fw-semibold" style="color: var(--wm-navy);">J. Reyes</div>
+                            <div class="text-muted" style="font-size: 0.75rem;">STAFF</div>
+                        </td>
+                        <td>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle">
+                                <i class="bi bi-plus-circle me-1"></i>Created
+                            </span>
+                        </td>
+                        <td class="font-monospace fw-semibold" style="color: var(--wm-navy);">ELEC-118</td>
+                        <td class="small">Added new product <strong>Industrial Label Printer</strong> (Initial stock: 5 @ $260.00)</td>
+                        <td class="text-end font-monospace text-muted small">192.168.1.22</td>
+                    </tr>
+
+                    <!-- Sample Log 4: Stock Update -->
+                    <tr>
+                        <td class="font-monospace text-muted small">#LOG-1045</td>
+                        <td class="small">2026-11-24 10:14:02</td>
+                        <td>
+                            <div class="fw-semibold" style="color: var(--wm-navy);">J. Reyes</div>
+                            <div class="text-muted" style="font-size: 0.75rem;">STAFF</div>
+                        </td>
+                        <td>
+                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">
+                                <i class="bi bi-pencil-square me-1"></i>Stock Update
+                            </span>
+                        </td>
+                        <td class="font-monospace fw-semibold" style="color: var(--wm-navy);">OFF-204</td>
+                        <td class="small">Received supplier restock: <strong>+40</strong> units (New stock: 64)</td>
+                        <td class="text-end font-monospace text-muted small">192.168.1.22</td>
+                    </tr>
+
+                    <!-- Sample Log 5: Product Deleted -->
+                    <tr>
+                        <td class="font-monospace text-muted small">#LOG-1044</td>
+                        <td class="small">2026-11-23 17:05:50</td>
+                        <td>
+                            <div class="fw-semibold" style="color: var(--wm-navy);">Admin</div>
+                            <div class="text-muted" style="font-size: 0.75rem;">ADMIN</div>
+                        </td>
+                        <td>
+                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle">
+                                <i class="bi bi-trash me-1"></i>Deleted
+                            </span>
+                        </td>
+                        <td class="font-monospace fw-semibold" style="color: var(--wm-navy);">HRD-102</td>
+                        <td class="small">Removed discontinued item <strong>Steel Strapping Tensioner</strong></td>
+                        <td class="text-end font-monospace text-muted small">192.168.1.14</td>
+                    </tr>
+
+                    <!-- Sample Log 6: Logout -->
+                    <tr>
+                        <td class="font-monospace text-muted small">#LOG-1043</td>
+                        <td class="small">2026-11-23 17:08:11</td>
+                        <td>
+                            <div class="fw-semibold" style="color: var(--wm-navy);">Admin</div>
+                            <div class="text-muted" style="font-size: 0.75rem;">ADMIN</div>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">
+                                <i class="bi bi-box-arrow-right me-1"></i>Logout
+                            </span>
+                        </td>
+                        <td class="font-monospace fw-semibold" style="color: var(--wm-navy);">SESSION</td>
+                        <td class="small">User signed out and terminated session</td>
+                        <td class="text-end font-monospace text-muted small">192.168.1.14</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap 5.3 JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Session Check & User Info Loader -->
+<script>
+    fetch('php/data/get_user_session.php')
+        .then(res => {
+            if (!res.ok) window.location.href = 'login.html';
+            return res.json();
+        })
+        .then(data => {
+            if (!data.authenticated) {
+                window.location.href = 'login.html';
+                return;
+            }
+            if (data.username) {
+                document.getElementById('navUsername').textContent = data.username;
+            }
+            if (data.role) {
+                document.getElementById('navUserRole').textContent = data.role;
+            }
+        })
+        .catch(() => {
+            window.location.href = 'login.html';
+        });
+</script>
+</body>
+</html>
